@@ -505,7 +505,8 @@ const gameMustRunLoop = setInterval(() => {
         // If lake is not full: take an indice and find the fish name to be 'possibly included'
         if (lake.childNodes.length < values.fullLake) {
           const fishIndice = getIndice(0, fishImages.length)
-          const fishChanceToCome = fishPercentageChance[fishImages[fishIndice].split("/")[2].split(".gif")[0]]
+          const fishChanceToCome = fishPercentageChance[fishImages[fishIndice].split("/")[3].split(".gif")[0]]
+          console.log(fishChanceToCome)
           
           const extraCondition = Math.random()
 
