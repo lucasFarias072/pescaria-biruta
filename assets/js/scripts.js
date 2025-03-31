@@ -298,7 +298,7 @@ const getIndice = (tail, head) => {
 
 const giveBirthFish = (where, amount, img) => {
   for (let i = 0; i < amount; i++) {
-    const fishName = img.split("/")[2].split(".gif")[0]
+    const fishName = img.split("/")[3].split(".gif")[0]
     const fishChanceToCapture = fishPercentageChance[fishName]
     const fish = document.createElement('img')
     
@@ -506,7 +506,6 @@ const gameMustRunLoop = setInterval(() => {
         if (lake.childNodes.length < values.fullLake) {
           const fishIndice = getIndice(0, fishImages.length)
           const fishChanceToCome = fishPercentageChance[fishImages[fishIndice].split("/")[3].split(".gif")[0]]
-          console.log(fishChanceToCome)
           
           const extraCondition = Math.random()
 
@@ -560,7 +559,7 @@ const gameMustRunLoop = setInterval(() => {
         
         // If there is collision (fish XY is close to XY of the hook)
         if (hookRanges.includes(isThereCollisionX) && hookRanges.includes(isThereCollisionY)) {
-          console.log('colisão...')
+          // console.log('colisão...')
           
           const hookedFish = fishInstance.getAttribute('data-name')
           const hookedFishChance = fishPercentageChance[hookedFish]
