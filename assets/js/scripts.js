@@ -4,15 +4,11 @@ const values = {
   alertHookingColor: 'rgb(0, 222, 0)',
   alertNotHookingColor: 'rgb(10, 40, 20)',
   alertLostHookColor: 'rgb(128, 28, 0)',
-  animationIntervalForBoat: 1000,
   animationIntervalForGame: 400, // was 200
   animationIntervalForGamePreview: 1000,
-  animationIntervalForHook: 10,
-  animationIntervalForLake: 1000,
-  animationIntervalForThread: 500,
   boatOffsetSpeed: 22,
   doubled: 2,
-  creationTime: 100,
+  creationTime: 200,
   clockIncreaser: 50,
   clockRebooter: 0,
   fullBucket: 18,
@@ -24,6 +20,8 @@ const values = {
   threadHeightAfterCapture: '3.3rem',
   invisibleFish: '0',
   properRowsAmount: 3,
+  screenHeight: window.innerHeight,
+  screenWidth: window.innerWidth,
   slotIsEmpty: 0,
   smallFishScaleReducer: '0.96',
   stdBackground: 'linear-gradient(15deg, rgb(0, 86, 159), rgb(29, 145, 197), rgb(129, 179, 202))',
@@ -64,7 +62,7 @@ const fishFromGameTrigger = document.getElementById('fish-from-game-trigger')
 const instructionsTrigger = document.getElementById('instructions-trigger')
 
 // Dynamic DOM content
-const fishChart = document.getElementById('fish-chart')
+const fishChart = document.getElementById('fish-chart') 
 
 let bucketPos = 0
 let gameClock = 0
@@ -188,7 +186,6 @@ const updateAlertBox = (btnHtml, backgroundInk, txt) => {
   btnHtml.textContent = txt
 }
 
-// todo
 const setupThreadStyle = (threadHtml, hookHtml, indicator) => {
   const morningThemes = [0, 1, 2] 
   const afternoonThemes = [3, 4]  
@@ -217,56 +214,73 @@ const setupThreadStyle = (threadHtml, hookHtml, indicator) => {
   }
 }
 
+const setupDayTime = (timeObject) => {
+  // const b4Morning = [5, 6]
+  const morning = [7, 8, 9, 10]
+  const afternoon = [11, 12, 13, 14, 15]
+  const dusk = [16, 17]
+  const earlyEvening = [19, 20, 21, 22, 23]
+  const lateEvening = [0, 1, 2, 3]
+  let pos
+  let tObj = timeObject
+  
+  const assertions = [
+    [tObj.h === 5 && tObj.m > 40 || tObj.h === 6, 0], // 5:41 às 6:59
+    [morning.includes(tObj.h), 1], // 7 às 10:59
+    [afternoon.includes(tObj.h), 2], // 11 às 15:59
+    [dusk.includes(tObj.h) && tObj.m <= 40, 3], // 16 às 16:40
+    [tObj.h === 16 && tObj.m > 40 || tObj.h === 17 && tObj.m <= 50, 4], // 16:41 às 17:50
+    [tObj.h === 17 && tObj.m > 50 || tObj.h === 18, 5], // 17:51 às 18:59
+    [earlyEvening.includes(tObj.h), 6], // 19 às 23:59
+    [lateEvening.includes(tObj.h) || tObj.h === 4 && tObj.m <= 50, 7], // meia noite às 4:50
+    [tObj.h === 4 && tObj.m > 50 || tObj.h === 5 && tObj.m <= 40, 8] // 4:51 às 5:40
+  ]
+  
+  // for(let assertion of assertions) {console.log(assertion)}
+
+  for(let i = 0; i < assertions.length; i++) {
+    if (assertions[i][0]) {
+      pos = assertions[i][1]
+      break
+    }
+  }
+  
+  return pos
+}
+
 const watchThreadMovement = () => {
   setInterval(() => {
     thread.style.transform = `rotate(${applyOffset(1, 4)}deg)`
   }, 500)
 }
 
+const watchHookMovement = () => {
+  setInterval(() => {
+    const threadStats = thread.getBoundingClientRect()
+    hook.style.top = `${threadStats.y - 60}px`
+    hook.style.left = `${threadStats.x - 5}px`
+  }, 10)
+} 
+
 const watchThreadStyle = () => {
   setInterval(() => {
-    setupThreadStyle(thread, hook, localStorage.getItem('theme-id'))
+    setupThreadStyle(thread, hook, parseInt(localStorage.getItem('theme-id')))
   }, 5000)
 }
 
-const setupTime = (timeObject) => {
-  const b4Morning = [5, 6]
-  const afterMorning = [7, 8, 9, 10]
-  const afternoonStart = [11, 12, 13, 14, 15]
-  const afternoonEnd = [16, 17]
-  const eveningAdvance = [19, 20, 21, 22, 23]
-  const eveningLate = [0, 1, 2, 3]
-  let pos
-  
-  if (b4Morning.includes(timeObject.h)) {
-    pos = 0
-  } 
-  else if (afterMorning.includes(timeObject.h)) {
-      pos = 1
-  } 
-  else if (afternoonStart.includes(timeObject.h)) {
-      pos = 2
-  } 
-  else if (afternoonEnd.includes(timeObject.h) && timeObject.m <= 39) {
-      pos = 3
-  } 
-  else if (timeObject.h === 16 && timeObject.m > 39 || timeObject.h === 17 && timeObject.m > 39) {
-      pos = 4
-  } 
-  else if (timeObject.h === 18) {
-      pos = 5
-  } 
-  else if (eveningAdvance.includes(timeObject.h)) {
-      pos = 6
-  } 
-  else if (eveningLate.includes(timeObject.h) || timeObject.h === 4 && timeObject.m < 49) {
-      pos = 7
-  } 
-  else {
-      pos = 8
-  }
-  
-  return pos
+const watchSetupDayTime = () => {
+  setInterval(() => {
+    const currentTime = new Date()
+    const clock = {h: currentTime.getHours(), m: currentTime.getMinutes(), s: currentTime.getSeconds()}
+    // const clock = {h: 6, m: 15, s: 0}
+    const themeColor = setupDayTime(clock)
+    lake.style.background = themes[themeColor]
+    localStorage.setItem('theme', themes[themeColor])
+    localStorage.setItem('theme-id', themeColor)
+    document.getElementById('h').textContent = adjustTime(clock.h)
+    document.getElementById('min').textContent = adjustTime(clock.m)
+    document.getElementById('sec').textContent = adjustTime(clock.s)
+  }, 1000)
 }
 
 const selectWindow = (windowsGroup, selected) => {
@@ -301,7 +315,7 @@ const loadFish = (where, fishPathsArray, msg, isRare=false) => {
     isRare ? fishImg.classList.add('cls-rare-fish') : null
     fishImg.style.opacity = '1'
     fishImg.style.margin = '.3rem'
-    fishImg.setAttribute('src', `../assets/img/${fishPathsArray[i]}.gif`)
+    fishImg.setAttribute('src', `./assets/img/${fishPathsArray[i]}.gif`)
     where.appendChild(fishImg)
   }
 }
@@ -395,46 +409,39 @@ const moveLake = (lakeHtml) => {
     // if (chanceToMoveGradient > 0.98) {
     //   htmlLake.style.background = newValue
     // }
-  }, values.animationIntervalForLake)
+  }, 1000)
 }
 
-const moveFish = (fishTag) => {
-  const offsetX = applyOffset(1, 34)
-  const offsetY = applyOffset(15, 34)
-  const orientation = applyOffset(1, 9)
+const checkSurfaceProximity = (fishHtml) => {
+  const isFishNearLakeSurface = parseInt(window.getComputedStyle(fishHtml).top.split('px')[0]) < 5
+  isFishNearLakeSurface ? fishHtml.style.top = `${getIndice(15, 30)}px` : null
+}
 
-  let fishX = parseInt(fishTag.style.top.split("px")[0])
-  let fishY = parseInt(fishTag.style.left.split("px")[0])
+const checkRightEdgeProximity = (fishHtml) => {
+  const currentFishLeft = parseInt(window.getComputedStyle(fishHtml).left.split('px')[0])
+  const isFishNearLeftEdge = currentFishLeft > 450
+  isFishNearLeftEdge ? fishHtml.style.left = `${currentFishLeft + getIndice(-15, -30)}px` : null
+}
+
+const moveFish = (fishHtml) => {
+  const offsetX = applyOffset(1, 34)
+  const offsetY = applyOffset(17, 34)
+  const chanceToMove = applyOffset(1, 13)
+
+  let fishX = parseInt(fishHtml.style.top.split("px")[0])
+  let fishY = parseInt(fishHtml.style.left.split("px")[0])
   
-  if (orientation === 1) {
-    fishTag.style.top = `${fishY + offsetY}px`
-  } else if (orientation === 2) {
-    fishTag.style.top = `${fishY - offsetY}px`
-  } else if (orientation === 3) {
-    fishTag.style.left = `${fishX + offsetX}px`
-  } else if (orientation === 4) {
-    fishTag.style.left = `${fishX - offsetX}px`
+  if (chanceToMove === 1) {
+    fishHtml.style.top = `${fishY + offsetY}px`
+  } else if (chanceToMove === 2) {
+    fishHtml.style.top = `${fishY - offsetY}px`
+  } else if (chanceToMove === 3) {
+    fishHtml.style.left = `${fishX + offsetX}px`
+  } else if (chanceToMove === 4) {
+    fishHtml.style.left = `${fishX - offsetX}px`
   } 
   
-  fishTag.style.transform = `rotate(${applyOffset(-90, 91)}deg)`
-
-  const fishCurrentX = parseInt(fishTag.style.top.split("px")[0])
-  const fishCurrentY = parseInt(fishTag.style.left.split("px")[0])
-  // console.log([fishCurrentX, fishCurrentY])
-  
-  // todo
-  if (fishCurrentX < 0) {
-    fishTag.style.left = '10px'
-  } else if (fishCurrentX > 1300) {
-    fishTag.style.left = '1200px'
-  }
-  
-  // todo
-  if (fishCurrentY < 0) {
-    fishTag.style.top = '10px'
-  } else if (fishCurrentY > 450) {
-    fishTag.style.top = '450px'
-  }
+  fishHtml.style.transform = `rotate(${applyOffset(-90, 91)}deg)`
   
 }
 
@@ -443,15 +450,15 @@ const checkHookChance = (fishPercentage) => {
   return fishPercentage >= systemChance ? true : false
 }
 
-const moveBoat = (boatTag) => {
+const watchBoatMovement = () => {
   let bounce = 0
 
   setInterval(() => {
     bounce > 2 ? bounce = 0 : bounce++
     bounce % 2 === 0 
-    ? boatTag.style.transform = `rotate(${applyOffset(-7, 8)}deg)` 
-    : boatTag.style.transform = `rotate(-${applyOffset(-7, 8)}deg)`
-  }, values.animationIntervalForBoat)
+    ? boat.style.transform = `rotate(${applyOffset(-7, 8)}deg)` 
+    : boat.style.transform = `rotate(-${applyOffset(-7, 8)}deg)`
+  }, 1000)
 }
 
 const decideFishInclusion = (chanceToCome, chanceToComePersonal, chanceToAdd, chanceToAddPersonal, indicePicked, htmlLake, allFishArray, commonFishArray) => {
@@ -512,26 +519,14 @@ const bucketSpace = [...document.querySelectorAll('.cls-slot')]
 
 // Get tag element of each fish
 let fish = [...document.querySelectorAll('.fish')]
-const lakeStats = lake.getBoundingClientRect()
 
-// Place all the fish in the middle of the lake
-fish.forEach(fishInstance => {
-  fishInstance.style.top = `${parseInt(lakeStats.height / 2)}px`
-  fishInstance.style.left = `${parseInt(lakeStats.width / 2)}px`
-})
-
+watchBoatMovement()
 watchThreadMovement()
 watchThreadStyle()
+watchHookMovement()
+watchSetupDayTime()
 
-const hookMovement = setInterval(() => {
-  const threadStats = thread.getBoundingClientRect()
-  hook.style.top = `${threadStats.y - 60}px`
-  hook.style.left = `${threadStats.x - 5}px`
-}, values.animationIntervalForHook)
-
-const moveBoatLoop = moveBoat(boat)
-
-// Check if game should start (stopped when true)
+// Check if game should start (it stops when true and game starts running)
 const gameMustRunLoop = setInterval(() => {
   const isGameSupposedToRun = launcher.getAttribute('class').split(' ').includes('enabled')
   
@@ -542,19 +537,6 @@ const gameMustRunLoop = setInterval(() => {
     setInterval(() => {
       // console.log(`Peixes no lago: ${lake.childNodes.length}`)
       moveLake(lake)
-      
-      // todo
-      const currentTime = new Date()
-      const clock = {h: currentTime.getHours(), m: currentTime.getMinutes(), s: currentTime.getSeconds()}
-      // const clock = {h: 18, m: 50, s: 0}
-      const themeColor = setupTime(clock)
-      lake.style.background = themes[themeColor]
-      localStorage.setItem('theme', themes[themeColor])
-      localStorage.setItem('theme-id', themeColor)
-      
-      document.getElementById('h').textContent = adjustTime(clock.h)
-      document.getElementById('min').textContent = adjustTime(clock.m)
-      document.getElementById('sec').textContent = adjustTime(clock.s)
       
       if (gameClock != values.creationTime) {
         gameClock += values.clockIncreaser
@@ -577,8 +559,8 @@ const gameMustRunLoop = setInterval(() => {
             
           // Update list of fish, after a new fish is added (or not)
           fish = [...document.querySelectorAll('.fish')]
-          fish[fish.length - 1].style.top = `${parseInt(lakeStats.height / 2)}px`
-          fish[fish.length - 1].style.left = `${parseInt(lakeStats.width / 1.5)}px`
+          fish[fish.length - 1].style.top = `${values.screenHeight / 3}px`
+          fish[fish.length - 1].style.left = `${values.screenWidth / 2}px`
           
         } 
       }
@@ -591,7 +573,7 @@ const gameMustRunLoop = setInterval(() => {
       const hookStats = hook.getBoundingClientRect()
       
       fish.forEach((fishInstance, pos) => {
-        
+  
         // Manage how the fish shows up on screen
         const fishVisibility = Math.random()
         const currentFishVisibility = parseFloat(window.getComputedStyle(fishInstance).opacity)
@@ -606,6 +588,8 @@ const gameMustRunLoop = setInterval(() => {
         // Collect data and make fish move
         const fishStats = fishInstance.getBoundingClientRect()
         moveFish(fishInstance)
+        checkSurfaceProximity(fishInstance)
+        checkRightEdgeProximity(fishInstance)
         
         // Collect data for collision
         const isThereCollisionX = parseInt(hookStats.x) - parseInt(fishStats.x)
@@ -650,6 +634,8 @@ launcher.addEventListener('click', () => {
   launcher.getAttribute('class').split(' ').includes('enabled')
   ? launcher.className = 'win cls-std-btn disabled'
   : launcher.className = 'win cls-std-btn enabled'
+  
+  gameTemplate.style.background = themes[parseInt(localStorage.getItem('theme-id'))]
 })
 
 fishFromGameTrigger.addEventListener('click', () => {

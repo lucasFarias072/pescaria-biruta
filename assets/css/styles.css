@@ -25,6 +25,11 @@
   justify-content: center;
   text-align: center;
 }
+.going-right {
+  align-items: flex-end;
+  justify-content: flex-end;
+  text-align: right;
+}
 .gap {
   gap: 1rem;
 }
@@ -47,8 +52,13 @@ img {
   position: relative;
   top: 0;
   left: 0;
-  transition: all linear 1.2s;
+  transition: all linear 1s;
   border: transparent solid 1px;
+}
+
+li {
+  list-style-position: inside;
+  padding: 0 0 0 1rem;
 }
 
 .full-height {
