@@ -4,8 +4,15 @@ const values = {
   alertHookingColor: 'rgb(0, 222, 0)',
   alertNotHookingColor: 'rgb(10, 40, 20)',
   alertLostHookColor: 'rgb(128, 28, 0)',
+  animationIntervalForBoat: 1000,
+  animationIntervalForGame: 400, // was 200
+  animationIntervalForGamePreview: 1000,
+  animationIntervalForHook: 10,
+  animationIntervalForLake: 1000,
+  animationIntervalForThread: 500,
+  boatOffsetSpeed: 22,
   doubled: 2,
-  creationTime: 250,
+  creationTime: 100,
   clockIncreaser: 50,
   clockRebooter: 0,
   fullBucket: 18,
@@ -14,18 +21,21 @@ const values = {
   fishIsNotComing: 'nada fisgado',
   fishScaped: 'peixe escapou',
   fishVisibilityCap: 1.0,
-  hookedPos: '3.3rem',
+  threadHeightAfterCapture: '3.3rem',
   invisibleFish: '0',
   properRowsAmount: 3,
   slotIsEmpty: 0,
   smallFishScaleReducer: '0.96',
   stdBackground: 'linear-gradient(15deg, rgb(0, 86, 159), rgb(29, 145, 197), rgb(129, 179, 202))',
+  stdTheme: 0,
+  threadThreshold: 55,
   unlikelyChance: 0.9,
   unlikelyChanceGreater: 0.95,
   visibilityIncreaser: 0.1
 }
 
 localStorage.getItem('theme') === null ? localStorage.setItem('theme', values.stdBackground) : null
+localStorage.getItem('theme-id') === null ? localStorage.setItem('theme-id', values.stdTheme) : null
 
 // Game elements
 const alertBtn = document.getElementById("alert")
@@ -59,7 +69,7 @@ const fishChart = document.getElementById('fish-chart')
 let bucketPos = 0
 let gameClock = 0
 
-const fishPercentageChance = {
+const fishPercentageChanceTable = {
   "big-mouth-bassterd": 1,
   "candy-striper": 1,
   "mutha-guppa": 1,
@@ -100,7 +110,6 @@ const fishPercentageChance = {
   "stone-boldur": 75
 }
 
-// todo
 const themes = [
   'linear-gradient(15deg, rgb(0, 86, 159), rgb(29, 145, 197), rgb(129, 179, 202))',
   'linear-gradient(15deg, rgb(2, 136, 209),rgb(79, 195, 247), rgb(179, 229, 252))',
@@ -113,9 +122,9 @@ const themes = [
   'linear-gradient(15deg, rgb(0, 33, 44),rgb(0, 46, 66),rgb(0, 86, 159))'
 ]
 
-const hookRanges = [-3, -2, -1, 0, 1, 2, 3]
+const hookRanges = [-4, -3, -2, -1, 0, 1, 2, 3, 4]
 
-const eachFishName = Object.keys(fishPercentageChance)
+const eachFishName = Object.keys(fishPercentageChanceTable)
 
 const eachSmallFish = [
   'orange-guppy', 'red-guppy', 'yellow-guppy', 
@@ -169,11 +178,21 @@ const adjustTime = (timeObject) => {
   return timeObject > 9 ? timeObject : `0${timeObject}`
 }
 
+const controlThreadThreshdhold = (threadHtml, thresholdVal) => {
+  const threadHeight = parseInt(window.getComputedStyle(threadHtml).height)
+  threadHeight < thresholdVal ? threadHtml.style.height = `${thresholdVal}px` : null
+}
+
+const updateAlertBox = (btnHtml, backgroundInk, txt) => {
+  btnHtml.style.background = backgroundInk
+  btnHtml.textContent = txt
+}
+
 // todo
 const setupThreadStyle = (threadHtml, hookHtml, indicator) => {
-  const morningThemes = [0, 1, 2] // #222
-  const afternoonThemes = [3, 4]  // crimson
-  const eveningThemes = [5, 6]    // orangered
+  const morningThemes = [0, 1, 2] 
+  const afternoonThemes = [3, 4]  
+  const eveningThemes = [5, 6]    
 
   if (morningThemes.includes(indicator)) {
     threadHtml.style.background = '#222'
@@ -198,7 +217,19 @@ const setupThreadStyle = (threadHtml, hookHtml, indicator) => {
   }
 }
 
-const setupTime = (timeObject, themes) => {
+const watchThreadMovement = () => {
+  setInterval(() => {
+    thread.style.transform = `rotate(${applyOffset(1, 4)}deg)`
+  }, 500)
+}
+
+const watchThreadStyle = () => {
+  setInterval(() => {
+    setupThreadStyle(thread, hook, localStorage.getItem('theme-id'))
+  }, 5000)
+}
+
+const setupTime = (timeObject) => {
   const b4Morning = [5, 6]
   const afterMorning = [7, 8, 9, 10]
   const afternoonStart = [11, 12, 13, 14, 15]
@@ -299,7 +330,7 @@ const getIndice = (tail, head) => {
 const giveBirthFish = (where, amount, img) => {
   for (let i = 0; i < amount; i++) {
     const fishName = img.split("/")[3].split(".gif")[0]
-    const fishChanceToCapture = fishPercentageChance[fishName]
+    const fishChanceToCapture = fishPercentageChanceTable[fishName]
     const fish = document.createElement('img')
     
     fish.setAttribute('src', img)
@@ -314,18 +345,18 @@ const applyOffset = (tail, head) => {
   return Math.floor(Math.random() * (head - tail) + tail)
 }
 
-const moveLake = (htmlLake) => {
+const moveLake = (lakeHtml) => {
   // const bg = []
   // const htmlBackground = localStorage.getItem('theme')
   
-  let lakeOffsetMin = -4
-  let lakeOffsetMax = 5
-  let lakeRotationOffsetMin = -3
-  let lakeRotationOffsetMax = 4
-  let threeGradients = 10
-  let fourGradients = 13
-  let numbers = ''
-  let newValue = ''
+  // let lakeOffsetMin = -4
+  // let lakeOffsetMax = 5
+  let minOffset = -1
+  let maxOffset = 2
+  // let threeGradients = 10
+  // let fourGradients = 13
+  // let numbers = ''
+  // let newValue = ''
   
   // for(let i = 1; i < htmlBackground.length; i++) {
   //   if (!isNaN(htmlBackground[i])) {
@@ -358,16 +389,16 @@ const moveLake = (htmlLake) => {
 
   // console.log(newValue)
   
-  const loop = setInterval(() => {
-    htmlLake.style.transform = `rotate(${getIndice(lakeRotationOffsetMin, lakeRotationOffsetMax)}deg)`
+  setInterval(() => {
+    lakeHtml.style.transform = `rotate(${getIndice(minOffset, maxOffset)}deg)`
     // const chanceToMoveGradient = Math.random()
     // if (chanceToMoveGradient > 0.98) {
     //   htmlLake.style.background = newValue
     // }
-  }, 1000)
+  }, values.animationIntervalForLake)
 }
 
-const moveFish = (htmlFishRect, htmlLakeRect, fishTag) => {
+const moveFish = (fishTag) => {
   const offsetX = applyOffset(1, 34)
   const offsetY = applyOffset(15, 34)
   const orientation = applyOffset(1, 9)
@@ -391,12 +422,14 @@ const moveFish = (htmlFishRect, htmlLakeRect, fishTag) => {
   const fishCurrentY = parseInt(fishTag.style.left.split("px")[0])
   // console.log([fishCurrentX, fishCurrentY])
   
+  // todo
   if (fishCurrentX < 0) {
     fishTag.style.left = '10px'
   } else if (fishCurrentX > 1300) {
     fishTag.style.left = '1200px'
   }
-
+  
+  // todo
   if (fishCurrentY < 0) {
     fishTag.style.top = '10px'
   } else if (fishCurrentY > 450) {
@@ -412,10 +445,13 @@ const checkHookChance = (fishPercentage) => {
 
 const moveBoat = (boatTag) => {
   let bounce = 0
-  const boatMovement = setInterval(() => {
+
+  setInterval(() => {
     bounce > 2 ? bounce = 0 : bounce++
-    bounce % 2 === 0 ? boatTag.style.transform = `rotate(${applyOffset(-7, 8)}deg)` : boatTag.style.transform = `rotate(-${applyOffset(-7, 8)}deg)`
-  }, 1000)
+    bounce % 2 === 0 
+    ? boatTag.style.transform = `rotate(${applyOffset(-7, 8)}deg)` 
+    : boatTag.style.transform = `rotate(-${applyOffset(-7, 8)}deg)`
+  }, values.animationIntervalForBoat)
 }
 
 const decideFishInclusion = (chanceToCome, chanceToComePersonal, chanceToAdd, chanceToAddPersonal, indicePicked, htmlLake, allFishArray, commonFishArray) => {
@@ -428,12 +464,38 @@ const decideFishInclusion = (chanceToCome, chanceToComePersonal, chanceToAdd, ch
   }
 }
 
-const setupCapturedFish = (capturedFish, capturedFishImg) => {
+const applyCapturedFishCss = (capturedFish, capturedFishImg) => {
   capturedFish.style.position = 'absolute'
   capturedFish.setAttribute("src", `./assets/img/${capturedFishImg}.gif`)
   capturedFish.style.transform = 'rotate(270deg)'
   capturedFish.style.zIndex = '5'
   capturedFish.style.opacity = '1'
+}
+
+const captureFish = (threadRect, hookRect, hookedFish) => {
+  const capturedFish = document.createElement("img")
+  applyCapturedFishCss(capturedFish, hookedFish)
+  capturedFish.style.top = `${threadRect.top + (hookRect.height * values.doubled)}px`
+  capturedFish.style.left = `${threadRect.left - hookRect.width}px`
+  return capturedFish
+}
+
+const triggerCaptureSystem = (fishName, statsDataSource) => {
+  const hookedFishChance = statsDataSource[fishName]
+  const isFishCaptured = checkHookChance(hookedFishChance)
+  return isFishCaptured
+}
+
+const addFishToBucket = (bucketHtml, bucketSlotPos, fishName) => {
+  bucketHtml[bucketSlotPos].firstChild.setAttribute("src", `./assets/img/${fishName}.gif`)
+}
+
+const throwSmallFishScaleReducer = (statement, bucketHtml, bucketSlotPos, proportionVal) => {
+  statement ? bucketHtml[bucketSlotPos].firstChild.style.scale = proportionVal : null
+}
+
+const resetThreadPos = (threadHtml, refForHeight) => {
+  threadHtml.style.height = refForHeight
 }
 
 const fishImages = []
@@ -458,19 +520,16 @@ fish.forEach(fishInstance => {
   fishInstance.style.left = `${parseInt(lakeStats.width / 2)}px`
 })
 
+watchThreadMovement()
+watchThreadStyle()
+
 const hookMovement = setInterval(() => {
   const threadStats = thread.getBoundingClientRect()
-  const hookStats = hook.getBoundingClientRect()
   hook.style.top = `${threadStats.y - 60}px`
   hook.style.left = `${threadStats.x - 5}px`
-}, 1)
+}, values.animationIntervalForHook)
 
 const moveBoatLoop = moveBoat(boat)
-
-const threadMovement = setInterval(() => {
-  const rotation = applyOffset(1, 4)
-  thread.style.transform = `rotate(${rotation}deg)`
-}, 500)
 
 // Check if game should start (stopped when true)
 const gameMustRunLoop = setInterval(() => {
@@ -480,7 +539,7 @@ const gameMustRunLoop = setInterval(() => {
     clearInterval(gameMustRunLoop)
     selectWindowMultiple(windows, [gameTemplate, gameResourcesTemplate])
     
-    const gameLoop = setInterval(() => {
+    setInterval(() => {
       // console.log(`Peixes no lago: ${lake.childNodes.length}`)
       moveLake(lake)
       
@@ -488,10 +547,10 @@ const gameMustRunLoop = setInterval(() => {
       const currentTime = new Date()
       const clock = {h: currentTime.getHours(), m: currentTime.getMinutes(), s: currentTime.getSeconds()}
       // const clock = {h: 18, m: 50, s: 0}
-      const themeColor = setupTime(clock, themes)
+      const themeColor = setupTime(clock)
       lake.style.background = themes[themeColor]
       localStorage.setItem('theme', themes[themeColor])
-      setupThreadStyle(thread, hook, themeColor)
+      localStorage.setItem('theme-id', themeColor)
       
       document.getElementById('h').textContent = adjustTime(clock.h)
       document.getElementById('min').textContent = adjustTime(clock.m)
@@ -505,7 +564,7 @@ const gameMustRunLoop = setInterval(() => {
         // If lake is not full: take an indice and find the fish name to be 'possibly included'
         if (lake.childNodes.length < values.fullLake) {
           const fishIndice = getIndice(0, fishImages.length)
-          const fishChanceToCome = fishPercentageChance[fishImages[fishIndice].split("/")[3].split(".gif")[0]]
+          const fishChanceToCome = fishPercentageChanceTable[fishImages[fishIndice].split("/")[3].split(".gif")[0]]
           
           const extraCondition = Math.random()
 
@@ -524,15 +583,10 @@ const gameMustRunLoop = setInterval(() => {
         } 
       }
       
-      if (fishImg.childNodes.length != values.slotIsEmpty) {
-        alertBtn.style.background = values.alertHookingColor
-        alertBtn.textContent = values.fishIsHooked
-      } else {
-        alertBtn.style.background = values.alertNotHookingColor
-        alertBtn.textContent = values.fishIsNotComing
-      }
-
-      const boatStats = boat.getBoundingClientRect()
+      fishImg.childNodes.length != values.slotIsEmpty
+      ? updateAlertBox(alertBtn, values.alertHookingColor, values.fishIsHooked)
+      : updateAlertBox(alertBtn, values.alertNotHookingColor, values.fishIsNotComing)
+      
       const threadStats = thread.getBoundingClientRect()
       const hookStats = hook.getBoundingClientRect()
       
@@ -551,7 +605,7 @@ const gameMustRunLoop = setInterval(() => {
 
         // Collect data and make fish move
         const fishStats = fishInstance.getBoundingClientRect()
-        moveFish(fishStats, lakeStats, fishInstance)
+        moveFish(fishInstance)
         
         // Collect data for collision
         const isThereCollisionX = parseInt(hookStats.x) - parseInt(fishStats.x)
@@ -562,41 +616,35 @@ const gameMustRunLoop = setInterval(() => {
           // console.log('colisão...')
           
           const hookedFish = fishInstance.getAttribute('data-name')
-          const hookedFishChance = fishPercentageChance[hookedFish]
-          const isFishCaptured = checkHookChance(hookedFishChance)
+          const isFishCaptured = triggerCaptureSystem(hookedFish, fishPercentageChanceTable)
           
           if (isFishCaptured) {
-            // Add captured fish to the bucket if it is not full
+            // If bucket is not full
             if (bucketPos < values.fullBucket) {
-              bucketSpace[bucketPos].firstChild.setAttribute("src", `./assets/img/${hookedFish}.gif`)
+              addFishToBucket(bucketSpace, bucketPos, hookedFish)
               
-              // Reduce fish's scale if it is a small fish
-              if (easyFish.includes(hookedFish)) {
-                bucketSpace[bucketPos].firstChild.style.scale = values.smallFishScaleReducer
-              }
+              // Reduce fish's scale on screen if it is a small one
+              throwSmallFishScaleReducer(
+                easyFish.includes(hookedFish), bucketSpace, bucketPos, values.smallFishScaleReducer
+              )
               
-              thread.style.height = values.hookedPos
-              const capturedFish = document.createElement("img")
-              setupCapturedFish(capturedFish, hookedFish)
-              capturedFish.style.top = `${threadStats.top + (hookStats.height * values.doubled)}px`
-              capturedFish.style.left = `${threadStats.left - hookStats.width}px`
+              resetThreadPos(thread, values.threadHeightAfterCapture)
+              const capturedFish = captureFish(threadStats, hookStats, hookedFish)
               fishImg.appendChild(capturedFish)
-              // capturedFish.style.position = 'absolute'
               lake.removeChild(fish[pos])
               bucketPos++
             }
           } 
           // Fish scaped
           else {
-            alertBtn.style.background = values.alertLostHookColor
-            alertBtn.textContent = values.fishScaped
+            updateAlertBox(alertBtn, values.alertLostHookColor, values.fishScaped)
           }
         }
       })
       
-    }, 200)
+    }, values.animationIntervalForGame)
   }
-}, 1000)
+}, values.animationIntervalForGamePreview)
 
 launcher.addEventListener('click', () => {
   launcher.getAttribute('class').split(' ').includes('enabled')
@@ -614,30 +662,38 @@ instructionsTrigger.addEventListener('click', () => {
 
 window.addEventListener("keydown", (e) => {
   const boatPos = parseInt(window.getComputedStyle(boat).left)
-  const rodPos = parseInt(window.getComputedStyle(rod).left)
   const boatStats = boat.getBoundingClientRect()
   const rodStats = rod.getBoundingClientRect()
   const threadStats = thread.getBoundingClientRect()
 
   switch(e.key) {
     case "a":
-      boat.style.left = `${boatPos - 32}px`
+      boat.style.left = `${boatPos - values.boatOffsetSpeed}px`
       rod.style.left = `${boatStats.x + boatStats.width - 32}px`
-      thread.style.left = `${rodStats.x + rodStats.width - 40}px`
+      thread.style.left = `${rodStats.x + rodStats.width - 30}px`
       fishImg.childNodes.length != 0 ? fishImg.removeChild(fishImg.firstChild) : null
       break
     case "d":
-      boat.style.left = `${boatPos + 32}px`
+      boat.style.left = `${boatPos + values.boatOffsetSpeed}px`
       rod.style.left = `${boatStats.x + boatStats.width}px`
-      thread.style.left = `${rodStats.x + rodStats.width + 16}px`
+      thread.style.left = `${rodStats.x + rodStats.width}px`
       fishImg.childNodes.length != 0 ? fishImg.removeChild(fishImg.firstChild) : null
       break
     case "w":
       thread.style.height = `${threadStats.height - 20}px`
+      controlThreadThreshdhold(thread, values.threadThreshold)
       break
     case "s":
       thread.style.height = `${threadStats.height + 20}px`
       fishImg.childNodes.length != 0 ? fishImg.removeChild(fishImg.firstChild) : null
       break
+  }
+})
+
+window.addEventListener("keyup", (e) => {
+  switch(e.key) {
+  case "w":
+    controlThreadThreshdhold(thread, values.threadThreshold)
+    break
   }
 })

@@ -47,7 +47,7 @@ img {
   position: relative;
   top: 0;
   left: 0;
-  transition: all linear 1s;
+  transition: all linear 1.2s;
   border: transparent solid 1px;
 }
 
@@ -251,6 +251,7 @@ img {
   left: 17.2rem;
   top: 3.3rem;
   z-index: 3;
+  transition: all linear .25s;
 }
 
 #game-template #hook {
