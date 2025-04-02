@@ -480,18 +480,19 @@ const moveFish = (fishHtml) => {
   const offsetX = applyOffset(1, 34)
   const offsetY = applyOffset(17, 34)
   const chanceToMove = applyOffset(1, 13)
+
+  let fishX = parseInt(fishHtml.style.top.split("px")[0])
+  let fishY = parseInt(fishHtml.style.left.split("px")[0])
   
   if (chanceToMove >= 10) {
     leastCap = getIndice(-1, -77)
     mostCap = getIndice(0, 78)
+    fishHtml.style.transform = `rotate(${applyOffset(leastCap, mostCap)}deg)`
   } else {
     leastCap = -77
     mostCap = 78
   }
 
-  let fishX = parseInt(fishHtml.style.top.split("px")[0])
-  let fishY = parseInt(fishHtml.style.left.split("px")[0])
-  
   if (chanceToMove === 1) {
     fishHtml.style.top = `${fishY + offsetY}px`
     fishHtml.style.transform = `rotate(${applyOffset(leastCap, mostCap)}deg)`
@@ -508,8 +509,6 @@ const moveFish = (fishHtml) => {
   // Manage how the fish shows up on screen
   else if (chanceToMove === 5) {
     handleFishOpacity(5, fishHtml, values.unlikelyChance, values.visibilityIncreaser)
-  } else if (chanceToMove >= 10) {
-    fishHtml.style.transform = `rotate(${applyOffset(leastCap, mostCap)}deg)`
   }
   
 }
