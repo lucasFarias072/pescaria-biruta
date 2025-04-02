@@ -4,12 +4,12 @@ const values = {
   alertHookingColor: 'rgb(0, 222, 0)',
   alertNotHookingColor: 'rgb(10, 40, 20)',
   alertLostHookColor: 'rgb(128, 28, 0)',
-  animationIntervalForGame: 500, // was 200
+  animationIntervalForGame: 400, // was 200
   animationIntervalForGamePreview: 1000,
   offsetSpeedBoat: 22,
   offsetSpeedThread: 11,
   doubled: 2,
-  creationTime: 250,
+  creationTime: 100,
   clockIncreaser: 50,
   clockRebooter: 0,
   fullBucket: 18,
@@ -30,12 +30,30 @@ const values = {
   stdBackground: 'linear-gradient(15deg, rgb(0, 86, 159), rgb(29, 145, 197), rgb(129, 179, 202))',
   stdTheme: 0,
   threadThreshold: 55,
-  unlikelyChance: 0.96,
+  unlikelyChance: 0.88,
   visibilityIncreaser: 0.1
 }
 
 localStorage.getItem('theme') === null ? localStorage.setItem('theme', values.stdBackground) : null
 localStorage.getItem('theme-id') === null ? localStorage.setItem('theme-id', values.stdTheme) : null
+
+// Copyright
+const imageCredits = document.getElementById('image-credits')
+const copyrightDescriptions = [...document.querySelectorAll('.cr')]
+
+imageCredits.addEventListener('click', () => {
+  copyrightDescriptions.forEach(tag => {
+    tag.getAttribute('class').split(' ').includes('cls-vanished')
+    ? tag.classList.remove('cls-vanished')
+    : null
+  })
+  setTimeout(() => {
+    copyrightDescriptions.forEach((tag, pos) => {
+      pos != 0 ? tag.classList.add('cls-vanished') : null
+    })
+  }, 7000)
+  
+})
 
 // Game elements
 const alertBtn = document.getElementById("alert")
@@ -127,7 +145,7 @@ const themes = [
   'linear-gradient(15deg, rgb(0, 33, 44),rgb(0, 46, 66),rgb(0, 86, 159))'
 ]
 
-const hookRanges = [-4, -3, -2, -1, 0, 1, 2, 3, 4]
+const hookRanges = [-2, -1, 0, 1, 2]
 
 const eachFishName = Object.keys(fishPercentageChanceTable)
 
@@ -457,31 +475,41 @@ const handleFishOpacity = (triggerVal, fishHtml, maxCap, capIncreaser) => {
 }
 
 const moveFish = (fishHtml) => {
+  let leastCap
+  let mostCap
   const offsetX = applyOffset(1, 34)
   const offsetY = applyOffset(17, 34)
   const chanceToMove = applyOffset(1, 13)
+  
+  if (chanceToMove >= 10) {
+    leastCap = getIndice(-1, -77)
+    mostCap = getIndice(0, 78)
+  } else {
+    leastCap = -77
+    mostCap = 78
+  }
 
   let fishX = parseInt(fishHtml.style.top.split("px")[0])
   let fishY = parseInt(fishHtml.style.left.split("px")[0])
   
   if (chanceToMove === 1) {
     fishHtml.style.top = `${fishY + offsetY}px`
-    fishHtml.style.transform = `rotate(${applyOffset(-88, 89)}deg)`
+    fishHtml.style.transform = `rotate(${applyOffset(leastCap, mostCap)}deg)`
   } else if (chanceToMove === 2) {
     fishHtml.style.top = `${fishY - offsetY}px`
-    fishHtml.style.transform = `rotate(${applyOffset(-88, 89)}deg)`
+    fishHtml.style.transform = `rotate(${applyOffset(leastCap, mostCap)}deg)`
   } else if (chanceToMove === 3) {
     fishHtml.style.left = `${fishX + offsetX}px`
-    fishHtml.style.transform = `rotate(${applyOffset(-88, 89)}deg)`
+    fishHtml.style.transform = `rotate(${applyOffset(leastCap, mostCap)}deg)`
   } else if (chanceToMove === 4) {
     fishHtml.style.left = `${fishX - offsetX}px`
-    fishHtml.style.transform = `rotate(${applyOffset(-88, 89)}deg)`
+    fishHtml.style.transform = `rotate(${applyOffset(leastCap, mostCap)}deg)`
   } 
   // Manage how the fish shows up on screen
   else if (chanceToMove === 5) {
     handleFishOpacity(5, fishHtml, values.unlikelyChance, values.visibilityIncreaser)
   } else if (chanceToMove >= 10) {
-    fishHtml.style.transform = `rotate(${applyOffset(-90, 91)}deg)`
+    fishHtml.style.transform = `rotate(${applyOffset(leastCap, mostCap)}deg)`
   }
   
 }

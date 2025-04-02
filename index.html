@@ -5,6 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Lucas Farias Santos de Sousa">
   <link rel="stylesheet" href="./assets/css/styles.css">
   <title>Pescaria</title>
 </head>
@@ -45,19 +46,19 @@
     
     <div class="flex column going-left">
       <div class="flex row going-left">
-        <p class="cls-big-word cls-ink">W</p>
+        <p class="cls-big-word">W</p>
         <span class="cls-ink">puxa a linha p/ cima</span>
       </div>
       <div class="flex row going-left">
-        <p class="cls-big-word cls-ink">S</p>
+        <p class="cls-big-word">S</p>
         <span class="cls-ink">puxa a linha p/ baixo</span>
       </div>
       <div class="flex row going-left">
-        <p class="cls-big-word cls-ink">A</p>
+        <p class="cls-big-word">A</p>
         <span class="cls-ink">move o barco p/ esquerda</span>
       </div>
       <div class="flex row going-left">
-        <p class="cls-big-word cls-ink">D</p>
+        <p class="cls-big-word">D</p>
         <span class="cls-ink">move o barco p/ direita</span>
       </div>
     </div>
@@ -93,9 +94,23 @@
     <div id="fish-img"></div>
 
     <div id="lake" class="">
-      <!-- <img class="fish" src="./assets/img/green-striper.gif" alt=""> -->
+      <!-- fish img tags are placed here dynamically -->
+      <!-- example: <img class="fish" src="./assets/img/green-striper.gif" alt="red guppy"> -->
     </div>
   </main>
+
+  <footer class="flex row going-center">
+    <p id="copyright">&copy; 2025 Lucas Farias. Todos os direitos reservados.</p>
+    
+    <div id="image-credits" class="flex column going-left">
+      <p id="copyright-icon" class="cr">🖱️ &copy;</p>
+      <p class="cr cls-vanished">Imagens utilizadas com propósito educacional</p>
+      <div id="sources-url" class="flex column going-left">
+        <a class="cr cls-vanished" href="https://www.gaiaonline.com/" target="_blank">🔗 Gaia Online (2002).</a>
+        <a class="cr cls-vanished" href="https://www.gaiaonline.com/fishing/" target="_blank">🔗 Gaia Fishing (2004).</a> 
+      </div> 
+    </div>
+  </footer>
   
   <script src="./assets/js/scripts.js"></script>
 </body>

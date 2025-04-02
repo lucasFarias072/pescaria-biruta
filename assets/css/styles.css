@@ -47,6 +47,35 @@ body {
   font-family: Georgia;
 }
 
+footer #copyright {
+  position: fixed;
+  bottom: .5rem;
+}
+
+footer #image-credits {
+  position: fixed;
+  bottom: .5rem;
+  right: .5rem;
+  background: linear-gradient(15deg, #111, #222);
+  border: white solid 1.5px;
+  border-radius: .5rem;
+  box-shadow: 0 0 .5rem #222;
+  color: white;
+  cursor: pointer;
+  padding: .2rem 2rem;
+  text-shadow: 0 0 .3rem white;
+}
+
+footer #image-credits #sources-url a {
+  color: purple;
+  text-shadow: 0 0 .1rem purple;
+  text-decoration: none;
+}
+
+footer #copyright-icon {
+  font-size: 1.5rem;
+}
+
 img {
   opacity: .1;
   position: relative;
@@ -68,13 +97,13 @@ li {
 .cls-big-word {
   background: linear-gradient(to left, #111, #222);
   border-radius: .2rem;
-  color: white;
+  color: orangered;
   font-size: 2rem;
   font-weight: bold;
   margin: .3rem;
   padding: .3rem;
   text-align: center;
-  text-shadow: 0 0 .5rem #222;
+  text-shadow: 0 0 .2rem orangered;
   width: 5rem;
 }
 
