@@ -89,6 +89,11 @@ li {
   transform: scale(1.2);
 }
 
+.cls-ink {
+  color: white;
+  text-shadow: 0 0 .2rem rgb(33, 66, 99)
+}
+
 .cls-rare-fish {
   box-shadow: 0 0 .5rem rgb(220, 20, 60);
   border-radius: .5rem;
@@ -173,9 +178,10 @@ li {
 }
 
 #fish-from-game-template #fish-chart {
-  background: linear-gradient(to left, rgba(11, 11, 11, .5), rgba(22, 22, 22, .5));
+  background: linear-gradient(to left, rgba(33, 66, 99, .2), rgba(0, 99, 99, .2));
+  border: rgba(33, 66, 99, .5) solid 1px;
   border-radius: .5rem;
-  height: 50vh;
+  box-shadow: 0 0 .3rem rgb(33, 66, 99);
   width: 80%;
 }
 
@@ -261,7 +267,7 @@ li {
   left: 17.2rem;
   top: 3.3rem;
   z-index: 3;
-  transition: all linear .25s;
+  transition: all linear .1s;
 }
 
 #game-template #hook {

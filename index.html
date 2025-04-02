@@ -11,20 +11,20 @@
 <body>
 
   <div id="game-index-screen-template" class="win full-height flex column going-center">
-    <h3>Bem-vindo</h3>
+    <h3 id="welcome-title" class="cls-ink">Bem-vindo</h3>
     <div class="flex row going-center">
       <span class="cls-icon">🐟</span>
-      <h1>Pescaria Biruta</h1>
+      <h1 id="game-title" class="cls-ink">Pescaria Biruta</h1>
       <span class="cls-icon">🦈</span>
     </div>
     
     <div class="flex row going-center gap">
       <div id="fish-from-game-trigger" class="flex column going-center">
-        <span id="fish-info">sobre os peixes</span>
+        <span id="fish-info" class="cls-ink">sobre os peixes</span>
         <span id="fish-info-cls-icon" class="cls-icon">🎣</span>
       </div>
       <div id="instructions-trigger" class="flex column going-center">
-        <span id="how-to-play">instruções</span>
+        <span id="how-to-play" class="cls-ink">instruções</span>
         <span id="how-to-play-cls-icon" class="cls-icon">🎮</span>
       </div>
     </div>
@@ -33,28 +33,42 @@
   </div>
 
   <div id="fish-from-game-template" class="win full-height flex column going-center cls-vanished">
-    <h1>Peixes do jogo 🐠</h1>
-    <div id="fish-chart" class="mb mt"></div>
+    <h1 id="fish-title" class="cls-ink">Peixes do jogo 🐠</h1>
+    <div id="fish-chart" class="mb mt">
+      <!-- receives dynamic content from JS -->
+    </div>
     <button class="cls-std-btn" onclick="returnIndex()">voltar</button>
   </div>
 
   <div id="instructions-template" class="win full-height flex column going-center cls-vanished">
-    <h1 class="mb">Controles</h1>
+    <h1 class="mb cls-ink">Controles</h1>
     
     <div class="flex column going-left">
-      <div class="flex row going-left"><p class="cls-big-word">W</p><span>puxa a linha p/ cima</span></div>
-      <div class="flex row going-left"><p class="cls-big-word">A</p><span>puxa a linha p/ baixo</span></div>
-      <div class="flex row going-left"><p class="cls-big-word">S</p><span>move o barco p/ esquerda</span></div>
-      <div class="flex row going-left"><p class="cls-big-word">D</p><span>move o barco p/ direita</span></div>
+      <div class="flex row going-left">
+        <p class="cls-big-word cls-ink">W</p>
+        <span class="cls-ink">puxa a linha p/ cima</span>
+      </div>
+      <div class="flex row going-left">
+        <p class="cls-big-word cls-ink">S</p>
+        <span class="cls-ink">puxa a linha p/ baixo</span>
+      </div>
+      <div class="flex row going-left">
+        <p class="cls-big-word cls-ink">A</p>
+        <span class="cls-ink">move o barco p/ esquerda</span>
+      </div>
+      <div class="flex row going-left">
+        <p class="cls-big-word cls-ink">D</p>
+        <span class="cls-ink">move o barco p/ direita</span>
+      </div>
     </div>
 
-    <h1 class="mt mb">Como capturar</h1>
+    <h1 class="mt mb cls-ink">Como capturar</h1>
     <div class="flex column going-left">
       <ol>
-        <li>Mova o barco e a linha usando as teclas acima</li>
-        <li>Posicione o anzol abaixo da ponta da linha, entre a cabeça e a boca do peixe</li>
-        <li>O peixe pode não fisgar, e há chances dele escapar caso fisgue</li>
-        <li>O barco e a linha se deslocam mais rápido se as teclas forem apertadas, ao invés de pressionar e segurar</li>
+        <li class="tutorial cls-ink">Mova o barco e a linha usando as teclas acima</li>
+        <li class="tutorial cls-ink">Posicione o anzol abaixo da ponta da linha, entre a cabeça e a boca do peixe</li>
+        <li class="tutorial cls-ink">O peixe pode não fisgar, e há chances dele escapar caso fisgue</li>
+        <li class="tutorial cls-ink">O barco e a linha se deslocam mais rápido se as teclas forem apertadas, ao invés de pressionar e segurar</li>
       </ol>
     </div>
     

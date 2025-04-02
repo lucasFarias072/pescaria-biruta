@@ -4,11 +4,12 @@ const values = {
   alertHookingColor: 'rgb(0, 222, 0)',
   alertNotHookingColor: 'rgb(10, 40, 20)',
   alertLostHookColor: 'rgb(128, 28, 0)',
-  animationIntervalForGame: 400, // was 200
+  animationIntervalForGame: 500, // was 200
   animationIntervalForGamePreview: 1000,
-  boatOffsetSpeed: 22,
+  offsetSpeedBoat: 22,
+  offsetSpeedThread: 11,
   doubled: 2,
-  creationTime: 200,
+  creationTime: 250,
   clockIncreaser: 50,
   clockRebooter: 0,
   fullBucket: 18,
@@ -19,16 +20,17 @@ const values = {
   fishVisibilityCap: 1.0,
   threadHeightAfterCapture: '3.3rem',
   invisibleFish: '0',
+  properCustomLeftOffsetRod: 32,
+  properCustomLeftOffsetThread: 30, // less than rod, cuz it needs to be attached to the rod
   properRowsAmount: 3,
   screenHeight: window.innerHeight,
   screenWidth: window.innerWidth,
   slotIsEmpty: 0,
-  smallFishScaleReducer: '0.96',
+  smallFishScaleReducer: '0.92',
   stdBackground: 'linear-gradient(15deg, rgb(0, 86, 159), rgb(29, 145, 197), rgb(129, 179, 202))',
   stdTheme: 0,
   threadThreshold: 55,
-  unlikelyChance: 0.9,
-  unlikelyChanceGreater: 0.95,
+  unlikelyChance: 0.96,
   visibilityIncreaser: 0.1
 }
 
@@ -108,6 +110,11 @@ const fishPercentageChanceTable = {
   "stone-boldur": 75
 }
 
+// Populated later
+const fishImages = []
+
+const eachThemeColor = ['#444', '#333', '#222', '#111', 'black', 'white', 'aqua', 'yellow', 'mediumseagreen']
+
 const themes = [
   'linear-gradient(15deg, rgb(0, 86, 159), rgb(29, 145, 197), rgb(129, 179, 202))',
   'linear-gradient(15deg, rgb(2, 136, 209),rgb(79, 195, 247), rgb(179, 229, 252))',
@@ -172,6 +179,10 @@ const fishImagesCommon = [
   './assets/img/white-pebbo.gif',
 ]
 
+const setupFishSrcPath = (container, fixedPath, imgExtension) => {
+  for(let fish of eachFishName) {container.push(`${fixedPath}${fish}${imgExtension}`)}
+}
+
 const adjustTime = (timeObject) => {
   return timeObject > 9 ? timeObject : `0${timeObject}`
 }
@@ -212,6 +223,10 @@ const setupThreadStyle = (threadHtml, hookHtml, indicator) => {
     threadHtml.style.boxShadow = '0 0 .5rem aqua'
     hookHtml.style.boxShadow = '0 0 .5rem aqua'
   }
+}
+
+const setupColorTheme = (htmlTagsGroup, eachThemeColorGroup, refVal) => {
+  htmlTagsGroup.forEach(tag => tag.style.color = eachThemeColorGroup[refVal])
 }
 
 const setupDayTime = (timeObject) => {
@@ -307,6 +322,7 @@ const returnIndex = () => {
 
 const loadFish = (where, fishPathsArray, msg, isRare=false) => {
   const txt = document.createElement('h3')
+  txt.className = 'cls-ink mb'
   txt.textContent = msg
   where.appendChild(txt)
   
@@ -423,6 +439,23 @@ const checkRightEdgeProximity = (fishHtml) => {
   isFishNearLeftEdge ? fishHtml.style.left = `${currentFishLeft + getIndice(-15, -30)}px` : null
 }
 
+const handleFishOpacity = (triggerVal, fishHtml, maxCap, capIncreaser) => {
+  const opacityCap = 1.0
+  const invisible = 0
+
+  if (triggerVal === 5) {
+    const chanceRate = Math.random()
+    const currentOpacity = parseFloat(window.getComputedStyle(fishHtml).opacity)
+    if (chanceRate > maxCap) {
+      if (currentOpacity < opacityCap) {
+        fishHtml.style.opacity = `${currentOpacity + capIncreaser}`
+      } else {
+        fishHtml.style.opacity = invisible
+      }
+    }
+  }
+}
+
 const moveFish = (fishHtml) => {
   const offsetX = applyOffset(1, 34)
   const offsetY = applyOffset(17, 34)
@@ -433,15 +466,23 @@ const moveFish = (fishHtml) => {
   
   if (chanceToMove === 1) {
     fishHtml.style.top = `${fishY + offsetY}px`
+    fishHtml.style.transform = `rotate(${applyOffset(-88, 89)}deg)`
   } else if (chanceToMove === 2) {
     fishHtml.style.top = `${fishY - offsetY}px`
+    fishHtml.style.transform = `rotate(${applyOffset(-88, 89)}deg)`
   } else if (chanceToMove === 3) {
     fishHtml.style.left = `${fishX + offsetX}px`
+    fishHtml.style.transform = `rotate(${applyOffset(-88, 89)}deg)`
   } else if (chanceToMove === 4) {
     fishHtml.style.left = `${fishX - offsetX}px`
+    fishHtml.style.transform = `rotate(${applyOffset(-88, 89)}deg)`
   } 
-  
-  fishHtml.style.transform = `rotate(${applyOffset(-90, 91)}deg)`
+  // Manage how the fish shows up on screen
+  else if (chanceToMove === 5) {
+    handleFishOpacity(5, fishHtml, values.unlikelyChance, values.visibilityIncreaser)
+  } else if (chanceToMove >= 10) {
+    fishHtml.style.transform = `rotate(${applyOffset(-90, 91)}deg)`
+  }
   
 }
 
@@ -505,14 +546,17 @@ const resetThreadPos = (threadHtml, refForHeight) => {
   threadHtml.style.height = refForHeight
 }
 
-const fishImages = []
-
-for(let fish of eachFishName) {fishImages.push(`./assets/img/${fish}.gif`)}
+setupFishSrcPath(fishImages, './assets/img/', '.gif')
 
 loadFish(fishChart, eachSmallFish, 'Pequenos')
 loadFish(fishChart, eachAverageFish, 'Médios')
 loadFish(fishChart, eachLargeFish, 'Grandes')
 loadFish(fishChart, eachRareFish, 'Raros', true)
+
+// After the creation of the last dynamic content (this one above)
+// Grouped Elements
+const htmlInfoTexts = document.querySelectorAll('.cls-ink')
+setupColorTheme(htmlInfoTexts, eachThemeColor, parseInt(localStorage.getItem('theme-id')))
 
 createBucket(bucket, values.properRowsAmount)
 const bucketSpace = [...document.querySelectorAll('.cls-slot')]
@@ -574,17 +618,6 @@ const gameMustRunLoop = setInterval(() => {
       
       fish.forEach((fishInstance, pos) => {
   
-        // Manage how the fish shows up on screen
-        const fishVisibility = Math.random()
-        const currentFishVisibility = parseFloat(window.getComputedStyle(fishInstance).opacity)
-        if (fishVisibility > values.unlikelyChance && fishVisibility < values.unlikelyChanceGreater) {
-          if (currentFishVisibility < values.fishVisibilityCap) {
-            fishInstance.style.opacity = `${currentFishVisibility + values.visibilityIncreaser}`
-          } else {
-            fishInstance.style.opacity = values.invisibleFish
-          }
-        }
-
         // Collect data and make fish move
         const fishStats = fishInstance.getBoundingClientRect()
         moveFish(fishInstance)
@@ -654,23 +687,23 @@ window.addEventListener("keydown", (e) => {
 
   switch(e.key) {
     case "a":
-      boat.style.left = `${boatPos - values.boatOffsetSpeed}px`
-      rod.style.left = `${boatStats.x + boatStats.width - 32}px`
-      thread.style.left = `${rodStats.x + rodStats.width - 30}px`
+      boat.style.left = `${boatPos - values.offsetSpeedBoat}px`
+      rod.style.left = `${boatStats.x + boatStats.width - values.properCustomLeftOffsetRod}px`
+      thread.style.left = `${rodStats.x + rodStats.width - values.properCustomLeftOffsetThread}px`
       fishImg.childNodes.length != 0 ? fishImg.removeChild(fishImg.firstChild) : null
       break
     case "d":
-      boat.style.left = `${boatPos + values.boatOffsetSpeed}px`
+      boat.style.left = `${boatPos + values.offsetSpeedBoat}px`
       rod.style.left = `${boatStats.x + boatStats.width}px`
       thread.style.left = `${rodStats.x + rodStats.width}px`
       fishImg.childNodes.length != 0 ? fishImg.removeChild(fishImg.firstChild) : null
       break
     case "w":
-      thread.style.height = `${threadStats.height - 20}px`
+      thread.style.height = `${threadStats.height - values.offsetSpeedThread}px`
       controlThreadThreshdhold(thread, values.threadThreshold)
       break
     case "s":
-      thread.style.height = `${threadStats.height + 20}px`
+      thread.style.height = `${threadStats.height + values.offsetSpeedThread}px`
       fishImg.childNodes.length != 0 ? fishImg.removeChild(fishImg.firstChild) : null
       break
   }
